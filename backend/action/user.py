@@ -34,32 +34,31 @@ class Login(BaseHandler):
         #code = self.get_argument('code', '')
 
         #if not code:
-        #    self.write(dict(status = False, msg = "请输入验证码"))
+        #    self.write(dict(status = False, message = "请输入验证码"))
         #    return
 
         #__session__ = self.get_sessionid()
         #store_code = mq.get(__session__)
         #if not store_code:
-        #    self.write(dict(status = False, msg = "验证码过期,重新生成", refresh = 1))
+        #    self.write(dict(status = False, message = "验证码过期,重新生成", refresh = 1))
         #    return
 
         #if code.lower() != store_code.decode().lower():
-        #    self.write(dict(status = False, msg = "验证码错误,重新生成", refresh = 1))
+        #    self.write(dict(status = False, message = "验证码错误,重新生成", refresh = 1))
         #    return
 
 
         if "@" in username:
             username = username.split("@")[0]
 
-        password = "admin!Aa2020"
         password = password_md5(password)
         user = User.get_or_none(User.username == username, \
                                 User.password == password)
 
         if not user:
-            self.write(dict(status = False, msg = "用户名或密码错误"))
+            self.write(dict(status = False, message = "用户名或密码错误"))
         elif user.enable == 0:
-            self.write(dict(status = False, msg = "用户无法正常登陆，请联系管理员!"))
+            self.write(dict(status = False, message = "用户无法正常登陆，请联系管理员!"))
         else:
             self.set_secure_cookie("__UID__", str(user.id))
             self.set_secure_cookie("__USERNAME__", str(user.username))
@@ -113,12 +112,13 @@ class UserAdd(LoginedRequestHandler):
         password: 用户密码
     """
     def post(self):
-        _id = self.get_argument('id', '')
-        username = self.get_argument('username')
-        email = self.get_argument('email', "")
-        nickname = self.get_argument('nickname', '')
-        password = self.get_argument('password', '')
-        enable = int(self.get_argument('enable', 1))
+        print (self.args)
+        _id = self.args.get('id')
+        username = self.args.get('username')
+        email = self.args.get('email', "")
+        nickname = self.args.get('nickname', '')
+        password = self.args.get('password', '')
+        enable = int(self.args.get('enable', 1))
 
 
         doc = dict(role_id = 2, enable = enable, nickname = nickname)
@@ -130,17 +130,17 @@ class UserAdd(LoginedRequestHandler):
 
         if _id:
             User.update(update_time = time.time(), **doc). \
-                            where(User._id == _id). \
+                            where(User.id == _id). \
                             execute()
 
-            self.write(dict(status = True, msg = '编辑成功'))
+            self.write(dict(status = True, message = '编辑成功'))
         else:
             user = User.get_or_none(User.username == username)
             if user:
-                self.write(dict(status = False, msg = "用户已注册"))
+                self.write(dict(status = False, message = "用户已注册"))
             else:
                 User(username = username, **doc).save()
-                self.write(dict(status = True, msg = '添加成功'))
+                self.write(dict(status = True, message = '添加成功'))
 
 
 
@@ -159,22 +159,22 @@ class UserPassword(LoginedRequestHandler):
         re_password = self.get_argument('re_password')
 
         if new_password != re_password:
-            self.write(dict(status = False, msg = "新密码输入不一致"))
+            self.write(dict(status = False, message = "新密码输入不一致"))
             return
 
         from logic.password_judge import passwd_judge
         advice = passwd_judge(new_password)
         if advice:
-            self.write(dict(status = False, msg = advice))
+            self.write(dict(status = False, message = advice))
             return
 
         user = User.get_or_none(User.id == self.uid)
         if user.password != password_md5(old_password):
-            self.write(dict(status = False, msg = "密码错误"))
+            self.write(dict(status = False, message = "密码错误"))
             return
 
         User.update(password = password_md5(new_password)).where(User.id == int(self.uid)).execute()
-        self.write(dict(status = True, msg = "设置成功"))
+        self.write(dict(status = True, message = "设置成功"))
 
 
 @url(r"/user/del", category = "用户")
@@ -185,22 +185,15 @@ class UserDel(LoginedRequestHandler):
         id: 用户id[]
     """
     def post(self):
-        _id = [int(_) for _ in self.get_arguments('id')]
+        _id = self.args.get('id')
 
-        users = User.select().where(User._id.in_(_id))
-        ids = [user.id for user in users]
-
-        if 1 in ids:
-            self.write(dict(status = False, msg = '不能删除admin'))
+        if 1 in _id:
+            self.write(dict(status = False, message = '不能删除admin'))
             return
 
-        if int(self.uid) in ids:
-            self.write(dict(status = False, msg = '不能删除自己'))
-            return
+        User.delete().where(User.id.in_(_id)).execute()
 
-        User.delete().where(User._id.in_(_id)).execute()
-
-        self.write(dict(status = True, msg = '删除成功'))
+        self.write(dict(status = True, message = '删除成功'))
 
 
 @url(r"/user/list", category = "用户")
@@ -218,8 +211,8 @@ class UserList(LoginedRequestHandler):
     """
     def get(self):
         search = self.get_argument('search', None)
-        page_index = int(self.get_argument('page_index', 1))
-        page_size = int(self.get_argument('page_size', 10))
+        page_index = int(self.get_argument('page', 1))
+        page_size = int(self.get_argument('limit', 10))
 
         _sort = self.get_argument('sort', None)
         sort = _sort[1:]

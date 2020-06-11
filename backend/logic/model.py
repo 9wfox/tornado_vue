@@ -88,6 +88,8 @@ def init_db():
     Role(name = "普通用户", level = 2, accesses = "").save()
 
     User(username = "admin", password = "131183217f782f0a302b7c165efbdca2", role_id = 1).save()
+    for i in range(22):
+        User(username = "admin{}".format(i), password = "131183217f782f0a302b7c165efbdca2", role_id = 1).save()
 
     Group(name = "测试", owner = 1, desc = "测试 ...").save()
     GroupUser(group_id = 1, user_id = 1, role_id = 1).save()
