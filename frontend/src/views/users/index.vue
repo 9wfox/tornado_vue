@@ -35,24 +35,34 @@
       style="width: 100%;"
       @sort-change="sortChange"
     >
-      <el-table-column label="ID" prop="id" sortable="custom" align="center" width="80px" :class-name="getSortClass('id')">
+      <el-table-column v-if="false" label="ID" prop="id" sortable="custom" align="center" width="80px" :class-name="getSortClass('id')">
         <template slot-scope="{row}">
           <span>{{ row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="用户名" min-width="210px" align="center">
+      <el-table-column label="用户名" width="120px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.username }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="登录时间" width="200" align="center">
+      <el-table-column label="昵称" min-width="80px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.login_time * 1000| parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span>{{ row.nickname }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="创建时间" width="200" align="center">
+      <el-table-column label="邮箱" width="180px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.create_time * 1000| parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span>{{ row.email }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="联系电话" width="160px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.tel }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="登录时间" width="150px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.login_time * 1000| parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
       <!-- <el-table-column label="Date" width="150px" align="center">
@@ -119,10 +129,21 @@
           <el-date-picker v-model="temp.timestamp" type="datetime" placeholder="Please pick a date" />
         </el-form-item> -->
         <el-form-item label="用户名" prop="用户名">
-          <el-input v-model="temp.username" />
+          <el-input v-model="temp.username" :disabled="true" />
         </el-form-item>
-        <el-form-item label="密码" prop="密码">
-          <el-input v-model="temp.password" type="password" />
+        <el-form-item label="昵称" prop="昵称">
+          <el-input v-model="temp.nickname" />
+        </el-form-item>
+        <el-form-item label="邮箱" prop="邮箱">
+          <el-input v-model="temp.email" />
+        </el-form-item>
+        <el-form-item label="联系电话" prop="联系电话">
+          <el-input v-model="temp.tel" />
+        </el-form-item>
+        <el-form-item label="项目">
+          <el-select v-model="temp.project" multiple="" class="filter-item" placeholder="Please select">
+            <el-option v-for="item in listQuery.project" :key="item.id" :label="item.name" :value="item.id" />
+          </el-select>
         </el-form-item>
         <!-- <el-form-item label="Status">
           <el-select v-model="temp.status" class="filter-item" placeholder="Please select">
@@ -161,6 +182,7 @@
 <script>
 import { fetchPv } from '@/api/article'
 import { getUsers, addUser, delUser } from '@/api/user'
+import { getProjects } from '@/api/project'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -205,10 +227,10 @@ export default {
         page: 1,
         limit: 20,
         username: undefined,
-        password: undefined,
-        importance: undefined,
-        title: undefined,
-        type: undefined,
+        nickname: undefined,
+        email: undefined,
+        tel: undefined,
+        project: [],
         sort: '+id'
       },
       importanceOptions: [1, 2, 3],
@@ -219,13 +241,10 @@ export default {
       temp: {
         id: undefined,
         username: '',
-        password: ''
-        // importance: 1,
-        // remark: '',
-        // timestamp: new Date(),
-        // title: '',
-        // type: '',
-        // status: 'published'
+        nickname: '',
+        email: '',
+        tel: '',
+        project: []
       },
       dialogFormVisible: false,
       dialogStatus: '',
@@ -256,7 +275,10 @@ export default {
         // Just to simulate the time of the request
         setTimeout(() => {
           this.listLoading = false
-        }, 1.5 * 1000)
+        }, 1.5 * 100)
+      })
+      getProjects({ 'limit': 1000 }).then(response => {
+        this.listQuery.project = response.data
       })
     },
     handleFilter() {
@@ -288,13 +310,10 @@ export default {
       this.temp = {
         id: undefined,
         username: '',
-        password: ''
-        // importance: 1,
-        // remark: '',
-        // timestamp: new Date(),
-        // title: '',
-        // status: 'published',
-        // type: ''
+        nickname: '',
+        email: '',
+        tel: '',
+        project: []
       }
     },
     handleCreate() {

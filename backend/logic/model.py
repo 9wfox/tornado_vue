@@ -44,6 +44,7 @@ class User(BaseModel):
     _id = CharField(default = id_func)
     username = CharField(unique = True)
     nickname = CharField(default = "")
+    tel = CharField(default = "")
     role = ForeignKeyField(Role)
     avatar = CharField(default = "")
     token = CharField(default = "")

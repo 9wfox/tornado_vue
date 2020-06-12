@@ -109,37 +109,45 @@ class UserAdd(LoginedRequestHandler):
 
         id: 用户id
         username*:用户名
-        password: 用户密码
     """
     def post(self):
         print (self.args)
         _id = self.args.get('id')
         username = self.args.get('username')
-        email = self.args.get('email', "")
         nickname = self.args.get('nickname', '')
+        email = self.args.get('email', "")
+        tel = self.args.get('tel', "")
+        role_id = self.args.get('role_id', 1)
         password = self.args.get('password', '')
-        enable = int(self.args.get('enable', 1))
+        enable = self.args.get('enable', 1)
+        project = self.args.get('project')
 
 
-        doc = dict(role_id = 2, enable = enable, nickname = nickname)
+        doc = dict(nickname = nickname, email = email, tel = tel, role_id = role_id)
+
         if password:
-            doc['password'] = password_md5(password)
+            doc['password'] = password
 
-        if email:
-            doc['email'] = email
+        def project_user(project, user_id):
+            ProjectUser.delete().where(ProjectUser.user_id == user_id).execute()
+            for p_id in project:
+                ProjectUser(project_id = p_id, user_id = user_id).save()
 
         if _id:
             User.update(update_time = time.time(), **doc). \
                             where(User.id == _id). \
                             execute()
 
+            project_user(project, _id)
             self.write(dict(status = True, message = '编辑成功'))
         else:
             user = User.get_or_none(User.username == username)
             if user:
                 self.write(dict(status = False, message = "用户已注册"))
             else:
-                User(username = username, **doc).save()
+                user = User(username = username, **doc)
+                user.save()
+                project_user(project, user.id)
                 self.write(dict(status = True, message = '添加成功'))
 
 
@@ -241,12 +249,14 @@ class UserList(LoginedRequestHandler):
                         order_by(sort).\
                         paginate(page_index, page_size)
 
-        users = [model_to_dict(user) for user in users]
+        #users = [model_to_dict(user) for user in users]
+        users = [dict(id = user.id, username = user.username, nickname = user.nickname, email = user.email, tel = user.tel, login_time = user.login_time) for user in users]
+        for user in users:
+            user['project'] = [p.project_id for p in ProjectUser.select().where(ProjectUser.user_id == user.get("id"))]
 
         self.write(dict(status = True, page_index = page_index, \
                             total = total, \
                             data = users))
-
 
 @url(r"/transaction/list", category = "用户")
 class TransactionList(LoginedRequestHandler):

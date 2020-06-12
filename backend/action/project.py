@@ -62,7 +62,7 @@ class ProjectList(LoginedRequestHandler):
         page_index = int(self.get_argument('page', 1))
         page_size = int(self.get_argument('limit', 10))
 
-        _sort = self.get_argument('sort', None)
+        _sort = self.get_argument('sort', "+id")
         sort = _sort[1:]
         # 方向 desc
         direction = _sort[0:1]
@@ -91,6 +91,6 @@ class ProjectList(LoginedRequestHandler):
 
         projects = [model_to_dict(project) for project in projects]
 
-        self.write(dict(status = True, data = projects))
+        self.write(dict(status = True, total = total, data = projects))
 
 
