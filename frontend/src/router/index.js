@@ -103,7 +103,19 @@ export const constantRoutes = [
         path: 'index',
         component: () => import('@/views/users/index'),
         name: '用户管理',
-        meta: { title: '用户管理', icon: 'people', noCache: true }
+        meta: { title: '用户管理', icon: 'peoples', noCache: true }
+      }
+    ]
+  },
+  {
+    path: '/project',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/project/index'),
+        name: '项目管理',
+        meta: { title: '项目管理', icon: 'documentation', noCache: true }
       }
     ]
   },

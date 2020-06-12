@@ -52,16 +52,10 @@ class User(BaseModel):
     email = CharField(default = "")
     password = CharField(default = "")
     enable = IntegerField(default = 1)
-    ldap_online = IntegerField(default = 0)
-    ldap_offline_time = DoubleField(default = 0)
-    auth_from = CharField(default = "LOCAL")
     create_time = DoubleField(default = time.time)
     update_time = DoubleField(default = time.time)
     active_time = DoubleField(default = time.time)
     login_time = DoubleField(default = 0)
-    total_points = IntegerField(default = 0)
-    frozen_points = IntegerField(default = 0)
-    available_points = IntegerField(default = 0)
 
 class Group(BaseModel):
     id = AutoField()
@@ -80,9 +74,23 @@ class GroupUser(BaseModel):
     role = ForeignKeyField(Role)
     create_time = DoubleField(default = time.time)
 
+class Project(BaseModel):
+    id = AutoField()
+    _id = CharField(default = id_func)
+    name = CharField()
+    desc = CharField()
+    owner = ForeignKeyField(User)
+    create_time = DoubleField(default = time.time)
+
+class ProjectUser(BaseModel):
+    _id = CharField(default = id_func)
+    project = ForeignKeyField(Project)
+    user = ForeignKeyField(User)
+    create_time = DoubleField(default = time.time)
+
 def init_db():
-    db.drop_tables([Role, User, Group, GroupUser])
-    db.create_tables([Role, User, Group, GroupUser])
+    db.drop_tables([Role, User, Group, GroupUser, Project, ProjectUser])
+    db.create_tables([Role, User, Group, GroupUser, Project, ProjectUser])
 
     Role(name = "超级管理员", level = 1, accesses = "").save()
     Role(name = "普通用户", level = 2, accesses = "").save()
