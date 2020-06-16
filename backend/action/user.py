@@ -253,6 +253,7 @@ class UserList(LoginedRequestHandler):
         users = [dict(id = user.id, username = user.username, nickname = user.nickname, email = user.email, tel = user.tel, login_time = user.login_time) for user in users]
         for user in users:
             user['project'] = [p.project_id for p in ProjectUser.select().where(ProjectUser.user_id == user.get("id"))]
+            user['project_name'] = [p.project.name for p in ProjectUser.select().where(ProjectUser.user_id == user.get("id"))]
 
         self.write(dict(status = True, page_index = page_index, \
                             total = total, \

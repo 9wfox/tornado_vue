@@ -45,7 +45,7 @@
           <span>{{ row.username }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="昵称" min-width="80px" align="center">
+      <el-table-column label="昵称" width="80px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.nickname }}</span>
         </template>
@@ -55,16 +55,23 @@
           <span>{{ row.email }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="联系电话" width="160px" align="center">
+      <el-table-column label="联系电话" width="120px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.tel }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="登录时间" width="150px" align="center">
+      <el-table-column label="项目" align="center" min-width="200" class-name="small-padding fixed-width">
+        <template slot-scope="{row}">
+          <el-button v-for="item in row.project_name" :key="item" type="success" size="mini" style="margin:1px;min-width:0px;">
+            {{ item }}
+          </el-button>
+        </template>
+      </el-table-column>
+      <!-- <el-table-column label="登录时间" width="150px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.login_time * 1000| parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
-      </el-table-column>
+      </el-table-column> -->
       <!-- <el-table-column label="Date" width="150px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
